@@ -1,0 +1,1 @@
+python .\midiTranslator.py
