@@ -390,13 +390,13 @@ def input_main(device_id=None):
                 elif key_status is 176:
                     if e.data1 == 1:  # 变动摇杆y状态
                         flag = e.data2 - joy_y
-                        if e.data2 > 64:
+                        if flag > 0 and e.data2 > 64:
                             m_code = MAKE_CODE['up_arrow']
                             v_code = VK_CODE['up_arrow']
                             win32api.keybd_event(v_code, m_code, 1, 0)
                             time.sleep(0.01)
                             win32api.keybd_event(v_code, 0xC8, 3, 0)
-                        elif e.data2 < 64:
+                        elif flag < 0 and e.data2 < 64:
                             m_code = MAKE_CODE['down_arrow']
                             v_code = VK_CODE['down_arrow']
                             win32api.keybd_event(v_code, m_code, 1, 0)
