@@ -278,26 +278,8 @@ def input_main(device_id=None):
             # if e.type in [KEYDOWN]:
             #     going = False
             if e.type in [pygame.midi.MIDIIN]:
-                print(e)
+                # print(e)
                 key_status = e.status
-
-                # pos_x, pos_y = get_mouse_point()
-                #
-                # if key_status is 224:  # 变动鼠标x加速度状态
-                #     if e.data2 < 30:
-                #         xg = -10
-                #     elif e.data2 > 99:
-                #         xg = 10
-                #     else:
-                #         xg = 0
-                #
-                # elif key_status is 176:  # 变动鼠标y加速度状态
-                #     if e.data2 < 30:
-                #         yg = 10
-                #     elif e.data2 > 99:
-                #         yg = -10
-                #     else:
-                #         yg = 0
 
                 # 变动摇杆x状态
                 if key_status is 224:
@@ -328,11 +310,11 @@ def input_main(device_id=None):
                                 win32api.keybd_event(v_code, 0xF0, 3, 0)
 
                 # 按下打击垫\键盘
-                elif key_status in {153, 144}:
+                elif key_status is 153 or key_status is 144:
                     key_down(e.data1)
 
                 # 抬起打击垫\键盘
-                elif key_status is {137, 128}:
+                elif key_status is 137 or key_status is 128:
                     key_up(e.data1)
 
                     # windll.user32.SetCursorPos(pos_x + xg, pos_y + yg)
