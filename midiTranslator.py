@@ -179,23 +179,20 @@ def mouse_move(x, y):
     windll.user32.SetCursorPos(x, y)
 
 
-def key_input_vk(c):
-    win32api.keybd_event(VK_CODE[c], 0, 0, 0)
-    time.sleep(0.01)
-    win32api.keybd_event(VK_CODE[c], 0, 3, 0)
+def key_input_vk(key_name):
+    key = VK_CODE[key_name]
+    key_input(key)
 
 
-def key_input(c):
-    win32api.keybd_event(c, 0, 0, 0)
+def key_input(key):
+    win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), 1, 0)
     time.sleep(0.01)
-    win32api.keybd_event(c, 0, 3, 0)
+    win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
 
 
 def key_down(key):
     key_name = KEY_CONFIG[key]
     # win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
-    time.sleep(0.001)
-    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0), 1, 0)
     win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0), 1, 0)
 
 
@@ -203,8 +200,7 @@ def key_up(key):
     key_name = KEY_CONFIG[key]
     # win32api.keybd_event(VK_CODE[key_name], BREAK_CODE[midi_key], 3, 0)
     # time.sleep(0.001)
-    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0), 3, 0)
-    # win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0) + 0b10000000, 3, 0)
+    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0) + 0b10000000, 3, 0)
 
 
 def print_device_info():
@@ -228,25 +224,15 @@ def _print_device_info():
               (i, interf, name, opened, in_out))
 
 
-def wheel_key(wheel, wheel_pos):
-    wheel_pos_last = Cache.get(wheel, 64)
-    key1, key2 = WHEEL_CONFIG[wheel]
+def wheel_key_input(midi_wheel_cc, wheel_pos):
+    wheel_pos_last = Cache.get(midi_wheel_cc, 64)
+    key1, key2 = WHEEL_CONFIG[midi_wheel_cc]
     flag = wheel_pos - wheel_pos_last
     if flag > 0 and wheel_pos > 64:
-        m_code = MAKE_CODE[key1]
-        time.sleep(0.001)
-        v_code = VK_CODE[key1]
-        win32api.keybd_event(v_code, m_code, 1, 0)
-        time.sleep(0.001)
-        win32api.keybd_event(v_code, BREAK_CODE[key1], 3, 0)
+        key_input(VK_CODE[key1])
     elif flag < 0 and wheel_pos < 64:
-        m_code = MAKE_CODE[key2]
-        time.sleep(0.001)
-        v_code = VK_CODE[key2]
-        win32api.keybd_event(v_code, m_code, 1, 0)
-        time.sleep(0.001)
-        win32api.keybd_event(v_code, BREAK_CODE[key2], 3, 0)
-    Cache[wheel] = wheel_pos
+        key_input(VK_CODE[key2])
+    Cache[midi_wheel_cc] = wheel_pos
 
 
 def input_main(device_id=None):
@@ -273,32 +259,26 @@ def input_main(device_id=None):
     while going:
         events = event_get()
         for e in events:
-            if e.type in [QUIT]:
+            if e.type in [QUIT, KEYDOWN]:
                 going = False
-            # if e.type in [KEYDOWN]:
-            #     going = False
             if e.type in [pygame.midi.MIDIIN]:
                 # print(e)
                 key_status = e.status
 
                 # 变动摇杆x状态
                 if key_status is 224:
-                    wheel_key(-1, e.data2)
+                    wheel_key_input(-1, e.data2)
 
                 elif key_status is 176:
                     # 变动摇杆y状态
                     wheel = e.data1
                     if wheel in WHEEL_CONFIG:
-                        wheel_key(wheel, e.data2)
+                        wheel_key_input(wheel, e.data2)
 
                     # 变动推子K8状态
                     elif e.data1 == 12:
                         if e.data2 == 0:
-                            m_code = MAKE_CODE['esc']
-                            v_code = VK_CODE['esc']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            time.sleep(0.01)
-                            win32api.keybd_event(v_code, 0xF0, 3, 0)
+                            key_input_vk('esc')
                         else:
                             for _key in ['d', 'f', 'j', 'k']:
                                 m_code = MAKE_CODE[_key]
@@ -316,8 +296,6 @@ def input_main(device_id=None):
                 # 抬起打击垫\键盘
                 elif key_status is 137 or key_status is 128:
                     key_up(e.data1)
-
-                    # windll.user32.SetCursorPos(pos_x + xg, pos_y + yg)
 
         if i.poll():
             midi_events = i.read(1)
