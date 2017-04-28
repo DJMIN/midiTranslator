@@ -259,8 +259,11 @@ def input_main(device_id=None):
     while going:
         events = event_get()
         for e in events:
-            if e.type in [QUIT, KEYDOWN]:
+            if e.type in [QUIT,
+                          # KEYDOWN,
+                          ]:
                 going = False
+
             if e.type in [pygame.midi.MIDIIN]:
                 # print(e)
                 key_status = e.status
