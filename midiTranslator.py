@@ -192,16 +192,19 @@ def key_input(c):
 
 
 def key_down(key):
-    midi_key = KEY_CONFIG[key]
-    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
-    # win32api.keybd_event(VK_CODE[midi_key], 0, 0, 0)
-    win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
+    key_name = KEY_CONFIG[key]
+    # win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
+    time.sleep(0.001)
+    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0), 1, 0)
+    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0), 1, 0)
 
 
 def key_up(key):
-    midi_key = KEY_CONFIG[key]
-    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
-    win32api.keybd_event(VK_CODE[midi_key], BREAK_CODE[midi_key], 3, 0)
+    key_name = KEY_CONFIG[key]
+    # win32api.keybd_event(VK_CODE[key_name], BREAK_CODE[midi_key], 3, 0)
+    # time.sleep(0.001)
+    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0), 3, 0)
+    # win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0) + 0b10000000, 3, 0)
 
 
 def print_device_info():
@@ -349,8 +352,8 @@ def input_main(device_id=None):
 if __name__ == '__main__':
     # if (joy_x | joy_y | k1 | k2 | k3 | k8) is 127 or (joy_x & joy_y & k1 & k2 & k3 & k8) is 0:
     #     for key, st in {joy_x, joy_y, k1, k2, k3, k8}:
-    # input_main()
-    for _ in range(3):
-        time.sleep(1)
-        # key_input_vk('+')
-        key_input(0x5D)
+    input_main()
+    # for _ in range(3):
+    #     time.sleep(1)
+    #     # key_input_vk('+')
+    #     key_input(0x5D)
