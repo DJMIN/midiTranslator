@@ -9,221 +9,106 @@ import pygame
 import pygame.midi
 from pygame.locals import *
 
+Cache = {}
 MIDI_KEY_DOWN = 144
 MIDI_KEY_UP = 128
 
+not_use_vk = {
+    'F13': 124, 'F14': 125, 'F15': 126, 'F16': 127, 'F17': 128, 'F18': 129, 'F19': 130, 'F20': 131, 'F21': 132,
+    'F22': 133, 'F23': 134, 'F24': 135, '\\': 220, 'clear': 12, 'clear_key': 254, 'crsel_key': 247, 'ctrl': 17,
+    'decimal_key': 110, 'execute': 43, 'exsel_key': 248, 'help': 47, 'play_key': 250, 'print': 42, 'select': 41,
+    'shift': 16, 'zoom_key': 251}
+
 VK_CODE = {
-    'backspace': 0x08,
-    'tab': 0x09,
-    'clear': 0x0C,
-    'enter': 0x0D,
-    'shift': 0x10,
-    'ctrl': 0x11,
-    'alt': 0x12,
-    'pause': 0x13,
-    'caps_lock': 0x14,
-    'esc': 0x1B,
-    'spacebar': 0x20,
-    'page_up': 0x21,
-    'page_down': 0x22,
-    'end': 0x23,
-    'home': 0x24,
-    'left_arrow': 0x25,
-    'up_arrow': 0x26,
-    'right_arrow': 0x27,
-    'down_arrow': 0x28,
-    'select': 0x29,
-    'print': 0x2A,
-    'execute': 0x2B,
-    'print_screen': 0x2C,
-    'ins': 0x2D,
-    'del': 0x2E,
-    'help': 0x2F,
-    '0': 0x30,
-    '1': 0x31,
-    '2': 0x32,
-    '3': 0x33,
-    '4': 0x34,
-    '5': 0x35,
-    '6': 0x36,
-    '7': 0x37,
-    '8': 0x38,
-    '9': 0x39,
-    'a': 0x41,
-    'b': 0x42,
-    'c': 0x43,
-    'd': 0x44,
-    'e': 0x45,
-    'f': 0x46,
-    'g': 0x47,
-    'h': 0x48,
-    'i': 0x49,
-    'j': 0x4A,
-    'k': 0x4B,
-    'l': 0x4C,
-    'm': 0x4D,
-    'n': 0x4E,
-    'o': 0x4F,
-    'p': 0x50,
-    'q': 0x51,
-    'r': 0x52,
-    's': 0x53,
-    't': 0x54,
-    'u': 0x55,
-    'v': 0x56,
-    'w': 0x57,
-    'x': 0x58,
-    'y': 0x59,
-    'z': 0x5A,
-    'numpad_0': 0x60,
-    'numpad_1': 0x61,
-    'numpad_2': 0x62,
-    'numpad_3': 0x63,
-    'numpad_4': 0x64,
-    'numpad_5': 0x65,
-    'numpad_6': 0x66,
-    'numpad_7': 0x67,
-    'numpad_8': 0x68,
-    'numpad_9': 0x69,
-    'multiply_key': 0x6A,
-    'add_key': 0x6B,
-    'separator_key': 0x6C,
-    'subtract_key': 0x6D,
-    'decimal_key': 0x6E,
-    'divide_key': 0x6F,
-    'F1': 0x70,
-    'F2': 0x71,
-    'F3': 0x72,
-    'F4': 0x73,
-    'F5': 0x74,
-    'F6': 0x75,
-    'F7': 0x76,
-    'F8': 0x77,
-    'F9': 0x78,
-    'F10': 0x79,
-    'F11': 0x7A,
-    'F12': 0x7B,
-    'F13': 0x7C,
-    'F14': 0x7D,
-    'F15': 0x7E,
-    'F16': 0x7F,
-    'F17': 0x80,
-    'F18': 0x81,
-    'F19': 0x82,
-    'F20': 0x83,
-    'F21': 0x84,
-    'F22': 0x85,
-    'F23': 0x86,
-    'F24': 0x87,
-    'num_lock': 0x90,
-    'scroll_lock': 0x91,
-    'left_shift': 0xA0,
-    'right_shift ': 0xA1,
-    'left_control': 0xA2,
-    'right_control': 0xA3,
-    'left_menu': 0xA4,
-    'right_menu': 0xA5,
-    'browser_back': 0xA6,
-    'browser_forward': 0xA7,
-    'browser_refresh': 0xA8,
-    'browser_stop': 0xA9,
-    'browser_search': 0xAA,
-    'browser_favorites': 0xAB,
-    'browser_start_and_home': 0xAC,
-    'volume_mute': 0xAD,
-    'volume_down': 0xAE,
-    'volume_up': 0xAF,
-    'next_track': 0xB0,
-    'previous_track': 0xB1,
-    'stop_media': 0xB2,
-    'play/pause_media': 0xB3,
-    'start_mail': 0xB4,
-    'select_media': 0xB5,
-    'start_application_1': 0xB6,
-    'start_application_2': 0xB7,
-    'attn_key': 0xF6,
-    'crsel_key': 0xF7,
-    'exsel_key': 0xF8,
-    'play_key': 0xFA,
-    'zoom_key': 0xFB,
-    'clear_key': 0xFE,
-    '+': 0xBB,
-    ',': 0xBC,
-    '-': 0xBD,
-    '.': 0xBE,
-    '/': 0xBF,
-    '`': 0xC0,
-    ';': 0xBA,
-    '[': 0xDB,
-    '\\': 0xDC,
-    ']': 0xDD,
-    "'": 0xDE
+    'backspace': 0x08, 'tab': 0x09, 'clear': 0x0C, 'enter': 0x0D, 'shift': 0x10, 'ctrl': 0x11, 'alt': 0x12,
+    'pause': 0x13, 'caps_lock': 0x14, 'esc': 0x1B, 'spacebar': 0x20, 'page_up': 0x21, 'page_down': 0x22,
+    'end': 0x23, 'home': 0x24, 'left_arrow': 0x25, 'up_arrow': 0x26, 'right_arrow': 0x27, 'down_arrow': 0x28,
+    'select': 0x29, 'print': 0x2A, 'execute': 0x2B, 'print_screen': 0x2C, 'ins': 0x2D, 'del': 0x2E, 'help': 0x2F,
+    '0': 0x30, '1': 0x31, '2': 0x32, '3': 0x33, '4': 0x34, '5': 0x35, '6': 0x36, '7': 0x37, '8': 0x38, '9': 0x39,
+    'a': 0x41, 'b': 0x42, 'c': 0x43, 'd': 0x44, 'e': 0x45, 'f': 0x46, 'g': 0x47, 'h': 0x48, 'i': 0x49, 'j': 0x4A,
+    'k': 0x4B, 'l': 0x4C, 'm': 0x4D, 'n': 0x4E, 'o': 0x4F, 'p': 0x50, 'q': 0x51, 'r': 0x52, 's': 0x53, 't': 0x54,
+    'u': 0x55, 'v': 0x56, 'w': 0x57, 'x': 0x58, 'y': 0x59, 'z': 0x5A, 'left_win': 0x5B, 'right_win': 0x5C,
+    'applications': 0x5D, 'numpad_0': 0x60, 'numpad_1': 0x61, 'numpad_2': 0x62, 'numpad_3': 0x63,
+    'numpad_4': 0x64, 'numpad_5': 0x65, 'numpad_6': 0x66, 'numpad_7': 0x67, 'numpad_8': 0x68, 'numpad_9': 0x69,
+    'multiply_key': 0x6A, 'add_key': 0x6B,
+    'separator_key': 0x6C,  # 小键盘enter
+    'subtract_key': 0x6D, 'decimal_key': 0x6E, 'divide_key': 0x6F, 'F1': 0x70, 'F2': 0x71, 'F3': 0x72,
+    'F4': 0x73, 'F5': 0x74, 'F6': 0x75, 'F7': 0x76, 'F8': 0x77, 'F9': 0x78, 'F10': 0x79, 'F11': 0x7A,
+    'F12': 0x7B, 'F13': 0x7C, 'F14': 0x7D, 'F15': 0x7E, 'F16': 0x7F, 'F17': 0x80, 'F18': 0x81, 'F19': 0x82,
+    'F20': 0x83, 'F21': 0x84, 'F22': 0x85, 'F23': 0x86, 'F24': 0x87, 'num_lock': 0x90, 'scroll_lock': 0x91,
+    'left_shift': 0xA0, 'right_shift': 0xA1, 'left_control': 0xA2, 'right_control': 0xA3, 'left_menu': 0xA4,
+    'right_menu': 0xA5, 'browser_back': 0xA6, 'browser_forward': 0xA7, 'browser_refresh': 0xA8,
+    'browser_stop': 0xA9, 'browser_search': 0xAA, 'browser_favorites': 0xAB, 'browser_start_and_home': 0xAC,
+    'volume_mute': 0xAD, 'volume_down': 0xAE, 'volume_up': 0xAF, 'next_track': 0xB0, 'previous_track': 0xB1,
+    'stop_media': 0xB2, 'play/pause_media': 0xB3, 'start_mail': 0xB4, 'select_media': 0xB5,
+    'start_application_1': 0xB6, 'start_application_2': 0xB7, 'attn_key': 0xF6, 'crsel_key': 0xF7,
+    'exsel_key': 0xF8, 'play_key': 0xFA, 'zoom_key': 0xFB, 'clear_key': 0xFE, '=': 0xBB, ',': 0xBC, '-': 0xBD,
+    '.': 0xBE, '/': 0xBF, '`': 0xC0, ';': 0xBA, '[': 0xDB, '\\': 0xDC, ']': 0xDD, "'": 0xDE
 }
+wangshang_yuanshi_make_code_set1 = {
+    "esc": 0x01, "1": 0x02, "2": 0x03, "3": 0x04, "4": 0x05, "5": 0x06, "6": 0x07, "7": 0x08, "8": 0x09, "9": 0x0a,
+    "0": 0x0b, "-": 0x0c, "=": 0x0d, "bksp": 0x0e, "tab": 0x0f, "q": 0x10, "w": 0x11, "e": 0x12, "r": 0x13, "t": 0x14,
+    "y": 0x15, "u": 0x16, "i": 0x17, "o": 0x18, "p": 0x19, "[": 0x1a, "]": 0x1b, "enter": 0x1c, "l_ctrl": 0x1d,
+    "a": 0x1e, "s": 0x1f, "d": 0x20, "f": 0x21, "g": 0x22, "h": 0x23, "j": 0x24, "k": 0x25, "l": 0x26, ";": 0x27,
+    "'": 0x28, "`": 0x29, "l_shft": 0x2a, "z": 0x2c, "x": 0x2d, "c": 0x2e, "v": 0x2f, "b": 0x30, "n": 0x31,
+    "m": 0x32, ",": 0x33, ".": 0x34, "/": 0x35, "r_shft": 0x36, "kp_*": 0x37, "l_alt": 0x38, "space": 0x39,
+    "caps": 0x3a, "f1": 0x3b, "f2": 0x3c, "f3": 0x3d, "f4": 0x3e, "f5": 0x3f, "f6": 0x40, "f7": 0x41, "f8": 0x42,
+    "f9": 0x43, "f10": 0x44, "num": 0x45, "scroll": 0x46, "kp_7": 0x47, "kp_8": 0x48, "kp_9": 0x49, "kp_-": 0x4a,
+    "kp_4": 0x4b, "kp_5": 0x4c, "kp_6": 0x4d, "kp_+": 0x4e, "kp_1": 0x4f, "kp_2": 0x50, "kp_3": 0x51, "kp_0": 0x52,
+    "kp_.": 0x53, "f11": 0x57, "f12": 0x58, "kp_en": 0xe01c, "r_ctrl": 0xe01d, "kp_/": 0xe035, "r_alt": 0xe038,
+    "home": 0xe047, "up_arrow": 0xe048, "pg_up": 0xe049, "l_arrow": 0xe04b, "r_arrow": 0xe04d, "end": 0xe04f,
+    "d_arrow": 0xe050, "pg_dn": 0xe051, "insert": 0xe052, "delete": 0xe053, "l_gui": 0xe05b, "r_gui": 0xe05c,
+    "apps": 0xe05d}
 
 MAKE_CODE = {
-    'a': 0x1C,
-    'b': 0x32,
-    'c': 0x21,
-    'd': 0x23,
-    'e': 0x24,
-    'f': 0x2B,
-    'g': 0x34,
-    'h': 0x33,
-    'i': 0x43,
-    'j': 0x3B,
-    'k': 0x42,
-    'l': 0x4B,
-    'm': 0x3A,
-    'n': 0x31,
-    'o': 0x44,
-    'p': 0x4D,
-    'q': 0x15,
-    'r': 0x2D,
-    's': 0x1B,
-    't': 0x2C,
-    'u': 0x3C,
-    'v': 0x2A,
-    'w': 0x1D,
-    'x': 0x22,
-    'y': 0x35,
-    'z': 0x1A,
-    ';': 0x27,
-    'backspace': 0x66,
-    'tab': 0x0D,
-    'enter': 0x5A,
-    'shift': 0x12,
-    'ctrl': 0x14,
-    'alt': 0x11,
-    'esc': 0x76,
-    'spacebar': 0x29,
-    'left_arrow': 0x4B,
-    'up_arrow': 0x48,
-    'right_arrow': 0x4D,
-    'down_arrow': 0x50,
-    'volume_up': 144,  # TODO
-    'volume_down': 145,  # TODO
-    'F3': 0x3D,
-    'F4': 0x3E,
+    'esc': 1, '1': 2, '2': 3, '3': 4, '4': 5, '5': 6, '6': 7, '7': 8, '8': 9, '9': 10, '0': 11, '-': 12,
+    '=': 13, 'backspace': 14, 'tab': 15, 'q': 16, 'w': 17, 'e': 18, 'r': 19, 't': 20, 'y': 21, 'u': 22,
+    'i': 23, 'o': 24, 'p': 25, '[': 26, ']': 27, 'enter': 28, 'a': 30, 's': 31, 'd': 32, 'f': 33, 'g': 34,
+    'h': 35, 'j': 36, 'k': 37, 'l': 38, ';': 39, "'": 40, '`': 41, 'z': 44, 'x': 45, 'c': 46, 'v': 47,
+    'b': 48, 'n': 49, 'm': 50, ',': 51, '.': 52, '/': 53, 'spacebar': 57, 'F1': 59, 'F2': 60, 'F3': 61,
+    'F4': 62, 'F5': 63, 'F6': 64, 'F7': 65, 'F8': 66, 'F9': 67, 'F10': 68, 'home': 57415, 'up_arrow': 57416,
+    'end': 57423, 'F11': 87, 'F12': 88, 'numpad_0': 82, 'numpad_1': 79, 'numpad_2': 80, 'numpad_3': 81,
+    'numpad_4': 75, 'numpad_5': 76, 'numpad_6': 77, 'numpad_7': 71, 'numpad_8': 72, 'numpad_9': 73,
+    'left_arrow': 57419, 'left_control': 29, 'left_shift': 42, 'right_arrow': 57421, 'right_control': 57373,
+    'scroll_lock': 70, 'caps_lock': 58, 'del': 57427, 'ins': 57426, 'left_menu': 56,
+    'page_down': 57425, 'page_up': 57417, 'right_menu': 57400, 'down_arrow': 57424,
+    'num_lock': 69, 'pause': 3776792033, 'right_shift': 54, 'print_screen': 3760906295, 'multiply_key': 55,
+    'attn_key': 83, 'subtract_key': 74, 'divide_key': 57397, 'add_key': 78, 'alt': 56, 'separator_key': 57372,
+    'applications': 57437, 'left_win': 57435, 'right_win': 57436,
+    'start_application_1(calculator?)': 57387,  # TODO
+    'start_application_2(my_computer?)': 57408,  # TODO
+    # 以下为scan code set2
+    'next_track': 57421, 'previous_track': 57365, 'volume_up': 57394, 'volume_down': 57377,
+    'start_mail': 57416, 'select_media': 57424, 'play/pause_media': 57396, 'stop_media': 57403,
+    'volume_mute': 57379, 'browser_back': 57400, 'browser_favorites': 57368, 'browser_forward': 57392,
+    'browser_start_and_home': 57402, 'browser_refresh': 57376, 'browser_search': 57360, 'browser_stop': 57384,
 }
 
-BREAK_CODE = {'a': 268, 'b': 274, 'c': 257, 'd': 259, 'e': 260,
-              'f': 267, 'g': 276, 'h': 275, 'i': 259, 'j': 283,
-              'k': 258, 'l': 267, 'm': 282, 'n': 273, 'o': 260,
-              'p': 269, 'q': 261, 'r': 269, 's': 267, 't': 268,
-              'u': 284, 'v': 266, 'w': 269, 'x': 258, 'y': 277,
-              'z': 266, ';': 263, 'backspace': 294, 'tab': 261,
-              'enter': 282, 'shift': 258, 'ctrl': 260, 'alt': 257,
-              'esc': 310, 'spacebar': 265, 'left_arrow': 267,
-              'up_arrow': 264, 'right_arrow': 269,
-              'down_arrow': 272, 'volume_up': 272,
-              'volume_down': 273, 'F3': 285, 'F4': 286}
+BREAK_CODE = {
+    'esc': 128, '1': 128, '2': 129, '3': 128, '4': 129, '5': 130, '6': 131, '7': 128, '8': 129, '9': 130, '0': 131,
+    '-': 132, '=': 133, 'backspace': 134, 'tab': 135, 'q': 128, 'w': 129, 'e': 130, 'r': 131, 't': 132, 'y': 133,
+    'u': 134, 'i': 135, 'o': 136, 'p': 137, '[': 138, ']': 139, 'enter': 140, 'a': 142, 's': 143, 'd': 128, 'f': 129,
+    'g': 130, 'h': 131, 'j': 132, 'k': 133, 'l': 134, ';': 135, "'": 136, '`': 137, 'z': 140, 'x': 141, 'c': 142,
+    'v': 143, 'b': 144, 'n': 145, 'm': 146, ',': 147, '.': 148, '/': 149, 'spacebar': 153, 'F1': 155, 'F2': 156,
+    'F3': 157, 'F4': 158, 'F5': 159, 'F6': 128, 'F7': 129, 'F8': 130, 'F9': 131, 'F10': 132, 'home': 57415,
+    'up_arrow': 57416, 'end': 57423, 'F11': 151, 'F12': 152, 'numpad_0': 146, 'numpad_1': 143, 'numpad_2': 144,
+    'numpad_3': 145, 'numpad_4': 139, 'numpad_5': 140, 'numpad_6': 141, 'numpad_7': 135, 'numpad_8': 136,
+    'numpad_9': 137, 'left_arrow': 57419, 'left_control': 141, 'left_shift': 138, 'right_arrow': 57421,
+    'right_control': 57373, 'scroll_lock': 134, 'caps_lock': 154, 'del': 57427, 'ins': 57426, 'left_menu': 152,
+    'page_down': 57425, 'page_up': 57417, 'right_menu': 57400, 'down_arrow': 57424, 'num_lock': 133,
+    'pause': 3776792033, 'right_shift': 150, 'print_screen': 3760906295, 'multiply_key': 151, 'attn_key': 147,
+    'subtract_key': 138, 'divide_key': 57397, 'add_key': 142, 'alt': 152, 'separator_key': 57372, 'applications': 57437,
+    'left_win': 57435, 'right_win': 57436, 'start_application_1(calculator?)': 57387,
+    'start_application_2(my_computer?)': 57408, 'next_track': 57421, 'previous_track': 57365, 'volume_up': 57394,
+    'volume_down': 57377, 'start_mail': 57416, 'select_media': 57424, 'play/pause_media': 57396, 'stop_media': 57403,
+    'volume_mute': 57379, 'browser_back': 57400, 'browser_favorites': 57368, 'browser_forward': 57392,
+    'browser_start_and_home': 57402, 'browser_refresh': 57376, 'browser_search': 57360, 'browser_stop': 57384}
 
-
-CONFIG = {
-    32: 'a',
-    33: 's',
-    34: 'l',
-    35: ';',
+KEY_CONFIG = {
+    32: '4',
+    33: '6',
+    34: '7',
+    35: '8',
     36: 'd',
     37: 'f',
     38: 'j',
@@ -253,6 +138,13 @@ CONFIG = {
     70: 'spacebar',
     71: 'spacebar',
     72: 'enter'
+}
+WHEEL_CONFIG = {
+    -1: ('right_arrow', 'left_arrow'),
+    1: ('up_arrow', 'down_arrow'),
+    6: ('right_arrow', 'left_arrow'),
+    7: ('F4', 'F3'),
+    8: ('volume_up', 'volume_down'),
 }
 
 
@@ -287,11 +179,29 @@ def mouse_move(x, y):
     windll.user32.SetCursorPos(x, y)
 
 
-def key_input(string=''):
-    for c in string:
-        win32api.keybd_event(VK_CODE[c], 0, 0, 0)
-        win32api.keybd_event(VK_CODE[c], 0, 3, 0)
-        time.sleep(0.001)
+def key_input_vk(c):
+    win32api.keybd_event(VK_CODE[c], 0, 0, 0)
+    time.sleep(0.01)
+    win32api.keybd_event(VK_CODE[c], 0, 3, 0)
+
+
+def key_input(c):
+    win32api.keybd_event(c, 0, 0, 0)
+    time.sleep(0.01)
+    win32api.keybd_event(c, 0, 3, 0)
+
+
+def key_down(key):
+    midi_key = KEY_CONFIG[key]
+    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
+    # win32api.keybd_event(VK_CODE[midi_key], 0, 0, 0)
+    win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
+
+
+def key_up(key):
+    midi_key = KEY_CONFIG[key]
+    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
+    win32api.keybd_event(VK_CODE[midi_key], BREAK_CODE[midi_key], 3, 0)
 
 
 def print_device_info():
@@ -315,6 +225,27 @@ def _print_device_info():
               (i, interf, name, opened, in_out))
 
 
+def wheel_key(wheel, wheel_pos):
+    wheel_pos_last = Cache.get(wheel, 64)
+    key1, key2 = WHEEL_CONFIG[wheel]
+    flag = wheel_pos - wheel_pos_last
+    if flag > 0 and wheel_pos > 64:
+        m_code = MAKE_CODE[key1]
+        time.sleep(0.001)
+        v_code = VK_CODE[key1]
+        win32api.keybd_event(v_code, m_code, 1, 0)
+        time.sleep(0.001)
+        win32api.keybd_event(v_code, BREAK_CODE[key1], 3, 0)
+    elif flag < 0 and wheel_pos < 64:
+        m_code = MAKE_CODE[key2]
+        time.sleep(0.001)
+        v_code = VK_CODE[key2]
+        win32api.keybd_event(v_code, m_code, 1, 0)
+        time.sleep(0.001)
+        win32api.keybd_event(v_code, BREAK_CODE[key2], 3, 0)
+    Cache[wheel] = wheel_pos
+
+
 def input_main(device_id=None):
     pygame.init()
     pygame.fastevent.init()
@@ -336,10 +267,6 @@ def input_main(device_id=None):
     pygame.display.set_mode((1, 1))
 
     going = True
-    # pos_x, pos_y = get_mouse_point()
-    # xg, yg = 0, 0
-    joy_x, joy_y = 64, 64
-    k1, k2, k3, k8 = 0, 0, 0, 0
     while going:
         events = event_get()
         for e in events:
@@ -348,7 +275,7 @@ def input_main(device_id=None):
             # if e.type in [KEYDOWN]:
             #     going = False
             if e.type in [pygame.midi.MIDIIN]:
-                # print(e)
+                print(e)
                 key_status = e.status
 
                 # pos_x, pos_y = get_mouse_point()
@@ -369,84 +296,18 @@ def input_main(device_id=None):
                 #     else:
                 #         yg = 0
 
-                if key_status is 224:  # 变动摇杆x状态
-                    flag = e.data2 - joy_x
-                    if flag > 0 and e.data2 > 64:
-                        m_code = MAKE_CODE['right_arrow']
-                        time.sleep(0.01)
-                        v_code = VK_CODE['right_arrow']
-                        win32api.keybd_event(v_code, m_code, 1, 0)
-                        time.sleep(0.01)
-                        win32api.keybd_event(v_code, BREAK_CODE['right_arrow'], 3, 0)
-                    elif flag < 0 and e.data2 < 64:
-                        m_code = MAKE_CODE['left_arrow']
-                        time.sleep(0.01)
-                        v_code = VK_CODE['left_arrow']
-                        win32api.keybd_event(v_code, m_code, 1, 0)
-                        time.sleep(0.01)
-                        win32api.keybd_event(v_code, BREAK_CODE['right_arrow'], 3, 0)
-                    joy_x = e.data2
+                # 变动摇杆x状态
+                if key_status is 224:
+                    wheel_key(-1, e.data2)
 
                 elif key_status is 176:
-                    if e.data1 == 1:  # 变动摇杆y状态
-                        flag = e.data2 - joy_y
-                        if flag > 0 and e.data2 > 64:
-                            m_code = MAKE_CODE['up_arrow']
-                            v_code = VK_CODE['up_arrow']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            time.sleep(0.01)
-                            win32api.keybd_event(v_code, 0xC8, 3, 0)
-                        elif flag < 0 and e.data2 < 64:
-                            m_code = MAKE_CODE['down_arrow']
-                            v_code = VK_CODE['down_arrow']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            time.sleep(0.01)
-                            win32api.keybd_event(v_code, 0xD0, 3, 0)
-                        joy_y = e.data2
-                    elif e.data1 == 5:  # 变动推子K1状态
-                        flag = e.data2 - k1
-                        if flag > 0 and e.data2 > 64:
-                            m_code = MAKE_CODE['volume_up']
-                            v_code = VK_CODE['volume_up']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            win32api.keybd_event(v_code, 0xF0, 3, 0)
-                        elif flag < 0 and e.data2 < 64:
-                            m_code = MAKE_CODE['volume_down']
-                            v_code = VK_CODE['volume_down']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            win32api.keybd_event(v_code, 0xF0, 3, 0)
-                        k1 = e.data2
-                    elif e.data1 == 6:  # 变动推子K2状态
-                        flag = e.data2 - k2
-                        if flag > 0 and e.data2 > 64:
-                            m_code = MAKE_CODE['right_arrow']
-                            v_code = VK_CODE['right_arrow']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            time.sleep(0.01)
-                            win32api.keybd_event(v_code, 0xF0, 3, 0)
-                        elif flag < 0 and e.data2 < 64:
-                            m_code = MAKE_CODE['left_arrow']
-                            v_code = VK_CODE['left_arrow']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            time.sleep(0.01)
-                            win32api.keybd_event(v_code, 0xF0, 3, 0)
-                        k2 = e.data2
-                    elif e.data1 == 7:  # 变动推子K3状态
-                        flag = e.data2 - k3
-                        if flag > 0 and e.data2 > 64:
-                            m_code = MAKE_CODE['F4']
-                            v_code = VK_CODE['F4']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            time.sleep(0.01)
-                            win32api.keybd_event(v_code, 0xF0, 3, 0)
-                        elif flag < 0 and e.data2 < 64:
-                            m_code = MAKE_CODE['F3']
-                            v_code = VK_CODE['F3']
-                            win32api.keybd_event(v_code, m_code, 1, 0)
-                            time.sleep(0.01)
-                            win32api.keybd_event(v_code, 0xF0, 3, 0)
-                        k3 = e.data2
-                    elif e.data1 == 12:  # 变动推子K8状态
+                    # 变动摇杆y状态
+                    wheel = e.data1
+                    if wheel in WHEEL_CONFIG:
+                        wheel_key(wheel, e.data2)
+
+                    # 变动推子K8状态
+                    elif e.data1 == 12:
                         if e.data2 == 0:
                             m_code = MAKE_CODE['esc']
                             v_code = VK_CODE['esc']
@@ -459,28 +320,17 @@ def input_main(device_id=None):
                                 v_code = VK_CODE[_key]
                                 win32api.keybd_event(v_code, m_code, 1, 0)
                                 time.sleep(0.001)
+                            for _key in ['d', 'f', 'j', 'k']:
+                                v_code = VK_CODE[_key]
                                 win32api.keybd_event(v_code, 0xF0, 3, 0)
 
-                if key_status is 153:  # 按下打击垫
-                    midi_key = CONFIG[e.data1]
-                    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
-                    # win32api.keybd_event(VK_CODE[midi_key], 0, 0, 0)
-                    win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE[midi_key], 1, 0)
+                # 按下打击垫\键盘
+                elif key_status in {153, 144}:
+                    key_down(e.data1)
 
-                elif key_status is 137:  # 抬起打击垫
-                    midi_key = CONFIG[e.data1]
-                    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
-                    win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE[midi_key], 3, 0)
-
-                elif key_status is 144:  # 按下键盘
-                    midi_key = CONFIG[e.data1]
-                    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
-                    win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE[midi_key], 1, 0)
-
-                elif key_status is 128:  # 抬起键盘
-                    midi_key = CONFIG[e.data1]
-                    # win32api.keybd_event(CONFIG[midi_key], 0, 0, 0)
-                    win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE[midi_key], 3, 0)
+                # 抬起打击垫\键盘
+                elif key_status is {137, 128}:
+                    key_up(e.data1)
 
                     # windll.user32.SetCursorPos(pos_x + xg, pos_y + yg)
 
@@ -497,4 +347,10 @@ def input_main(device_id=None):
 
 
 if __name__ == '__main__':
-    input_main()
+    # if (joy_x | joy_y | k1 | k2 | k3 | k8) is 127 or (joy_x & joy_y & k1 & k2 & k3 & k8) is 0:
+    #     for key, st in {joy_x, joy_y, k1, k2, k3, k8}:
+    # input_main()
+    for _ in range(3):
+        time.sleep(1)
+        # key_input_vk('+')
+        key_input(0x5D)
