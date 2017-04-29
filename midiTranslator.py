@@ -147,7 +147,7 @@ WHEEL_CONFIG = {
 
 MIDI_KEY_DOWN = 144
 MIDI_KEY_UP = 128
-Cache = {'keypress': set(), 'keypress_wait': {}}
+Cache = {'keypress': {}, 'keyfastpress': {}}
 
 
 class MyKeyPressThread(threading.Thread):
@@ -155,17 +155,41 @@ class MyKeyPressThread(threading.Thread):
         threading.Thread.__init__(self)
         self.name = name
         self.bool_stop = False
-        self.check_key_press_interval = 0.02
-        self.check_key_delay = 0.2
+        self.check_key_press_interval = 0.05
+        self.check_key_delay = 0.5
 
     def run(self):
         while not self.bool_stop:
             time_now = time.time()
             try:
-                for key_code in Cache['keypress']:
-                    # print(Cache)
-                    if Cache['keypress_wait'][key_code] < (time_now - self.check_key_delay):
+                # print(Cache)
+                for key_code, press_time in Cache['keypress'].items():
+                    if press_time < (time_now - self.check_key_delay):
                         key_press(key_code)
+            except (RuntimeError, KeyError):
+                pass
+            time.sleep(self.check_key_press_interval - 0.005)
+
+    def stop(self):
+        self.bool_stop = True
+
+
+class MyKeyFastPressThread(threading.Thread):
+    def __init__(self, name):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.bool_stop = False
+        self.check_key_press_interval = 0.005
+        self.check_key_delay = 0.001
+
+    def run(self):
+        while not self.bool_stop:
+            time_now = time.time()
+            try:
+                # print(Cache)
+                for key_code, press_time in Cache['keyfastpress'].items():
+                    if press_time < (time_now - self.check_key_delay):
+                        key_input(key_code)
             except (RuntimeError, KeyError):
                 pass
             time.sleep(self.check_key_press_interval - 0.005)
@@ -211,8 +235,9 @@ def key_input_vk(key_name):
 
 
 def key_input(key):
+    win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), 1, 0)
-    time.sleep(0.01)
+    time.sleep(0.001)
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
 
 
@@ -220,8 +245,7 @@ def key_down(key_code):
     # win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
     win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 0, 0)
     # win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
-    Cache['keypress'].add(key_code)
-    Cache['keypress_wait'][key_code] = time.time()
+    Cache['keypress'][key_code] = time.time()
 
 
 def key_press(key_code):
@@ -234,8 +258,24 @@ def key_up(key_code):
     # time.sleep(0.001)
     win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0) + 0b10000000, 3, 0)
     try:
-        Cache['keypress'].remove(key_code)
-        Cache['keypress_wait'].pop(key_code)
+        Cache['keypress'].pop(key_code)
+    except KeyError:
+        pass
+
+
+def key_fast_down(key_code):
+    # win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 0, 0)
+    # win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
+    Cache['keyfastpress'][key_code] = time.time()
+
+
+def key_fast_up(key_code):
+    # win32api.keybd_event(VK_CODE[key_name], BREAK_CODE[midi_key], 3, 0)
+    # time.sleep(0.001)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0) + 0b10000000, 3, 0)
+    try:
+        Cache['keyfastpress'].pop(key_code)
     except KeyError:
         pass
 
@@ -266,18 +306,19 @@ def wheel_key_input(midi_wheel_cc, wheel_pos):
     key1, key2 = WHEEL_CONFIG[midi_wheel_cc]
     key1, key2 = VK_CODE[key1], VK_CODE[key2]
     flag = wheel_pos - wheel_pos_last
-    if flag > 0 and wheel_pos > 64:
+    if flag > 0 and 127 > wheel_pos > 64:
         key_input(key1)
-    elif flag < 0 and wheel_pos < 64:
+    elif flag < 0 < wheel_pos < 64:
         key_input(key2)
 
     if wheel_pos == 0:
-        key_down(key2)
+        key_fast_down(key2)
     elif wheel_pos == 127:
-        key_down(key1)
+        key_fast_down(key1)
     else:
-        key_up(key1)
-        key_up(key2)
+        if wheel_pos_last in (0, 127):
+            key_fast_up(key1)
+            key_fast_up(key2)
 
     Cache[midi_wheel_cc] = wheel_pos
 
@@ -362,10 +403,13 @@ def input_main(device_id=None):
 if __name__ == '__main__':
     # if (joy_x | joy_y | k1 | k2 | k3 | k8) is 127 or (joy_x & joy_y & k1 & k2 & k3 & k8) is 0:
     #     for key, st in {joy_x, joy_y, k1, k2, k3, k8}:
-    th = MyKeyPressThread('keypress')
-    th.start()
+    th1 = MyKeyPressThread('keypress')
+    th2 = MyKeyFastPressThread('keyfastpress')
+    th1.start()
+    th2.start()
     input_main()
-    th.stop()
+    th1.stop()
+    th2.stop()
 
     # for _ in range(3):
     #     time.sleep(1)
