@@ -163,10 +163,10 @@ class MyKeyPressThread(threading.Thread):
             time_now = time.time()
             try:
                 for key_code in Cache['keypress']:
-                    print(Cache)
+                    # print(Cache)
                     if Cache['keypress_wait'][key_code] < (time_now - self.check_key_delay):
                         key_press(key_code)
-            except RuntimeError:
+            except (RuntimeError, KeyError):
                 pass
             time.sleep(self.check_key_press_interval - 0.005)
 
@@ -219,7 +219,7 @@ def key_input(key):
 def key_down(key_code):
     # win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
     win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 0, 0)
-    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
+    # win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
     Cache['keypress'].add(key_code)
     Cache['keypress_wait'][key_code] = time.time()
 
