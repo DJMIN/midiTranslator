@@ -12,14 +12,15 @@ import pygame.midi
 from pygame.locals import *
 
 # 设置为True可以获取到MIDI键盘输入信息
-DEBUG = False
+# DEBUG = False
+DEBUG = True
 
-# key为MIDI键盘key码（MIDI键盘输入信息中的data2）， value为在VK_CODE中存在的可模拟的键盘键位key
+# key为MIDI键盘key码（MIDI键盘输入信息中的"data2"）， value为在VK_CODE中存在的可模拟的键盘键位key
 KEY_CONFIG = {
-    32: '4',
-    33: '6',
-    34: '7',
-    35: '8',
+    32: 'd',
+    33: 'f',
+    34: 'j',
+    35: 'k',
     36: 'd',
     37: 'f',
     38: 'j',
@@ -29,19 +30,19 @@ KEY_CONFIG = {
     50: 'spacebar',
     51: 'spacebar',
     52: 'spacebar',
-    53: 'spacebar',
+    53: 'a',
     54: 'spacebar',
-    55: 'spacebar',
+    55: 's',
     56: 'spacebar',
-    57: 'spacebar',
+    57: 'd',
     58: 'spacebar',
-    59: 'spacebar',
-    60: 'spacebar',
+    59: 'f',
+    60: 'j',
     61: 'spacebar',
-    62: 'spacebar',
+    62: 'k',
     63: 'spacebar',
-    64: 'spacebar',
-    65: 'spacebar',
+    64: 'l',
+    65: ';',
     66: 'spacebar',
     67: 'spacebar',
     68: 'spacebar',
@@ -53,9 +54,11 @@ KEY_CONFIG = {
 WHEEL_CONFIG = {
     -1: ('right_arrow', 'left_arrow'),
     1: ('up_arrow', 'down_arrow'),
+    5: ('up_arrow', 'down_arrow'),
     6: ('right_arrow', 'left_arrow'),
     7: ('F4', 'F3'),
     8: ('volume_up', 'volume_down'),
+    9: ('spacebar', 'enter'),
 }
 
 """
@@ -243,7 +246,7 @@ def key_input_vk(key_name):
 def key_input(key):
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), 1, 0)
-    time.sleep(0.001)
+    time.sleep(0.01)
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
 
 
@@ -293,6 +296,7 @@ def print_device_info():
 
 
 def _print_device_info():
+    print('共找到%d个MIDI设备，默认MIDI输入设备ID为：%d' % (pygame.midi.get_count(), pygame.midi.get_default_input_id()))
     for i in range(pygame.midi.get_count()):
         r = pygame.midi.get_device_info(i)
         (interf, name, _input, _output, opened) = r
@@ -386,6 +390,19 @@ def input_main(device_id=None):
                             for _key in ['d', 'f', 'j', 'k']:
                                 v_code = VK_CODE[_key]
                                 win32api.keybd_event(v_code, 0xF0, 3, 0)
+
+                    # 变动推子K7状态
+                    elif e.data1 == 11:
+                        if 25 > e.data2 > 0:
+                            key_input_vk('4')
+                        elif 50 > e.data2 > 25:
+                            key_input_vk('5')
+                        elif 75 > e.data2 > 50:
+                            key_input_vk('6')
+                        elif 100 > e.data2 > 75:
+                            key_input_vk('7')
+                        elif 125 > e.data2 > 100:
+                            key_input_vk('8')
 
                 # 按下打击垫\键盘
                 elif key_status is 153 or key_status is 144:
