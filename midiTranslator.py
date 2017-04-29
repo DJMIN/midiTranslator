@@ -1,3 +1,4 @@
+
 import win32api
 import win32con
 import time
@@ -9,6 +10,57 @@ from ctypes import *
 import pygame
 import pygame.midi
 from pygame.locals import *
+
+# 设置为True可以获取到MIDI键盘输入信息
+DEBUG = False
+
+# key为MIDI键盘key码（MIDI键盘输入信息中的data2）， value为在VK_CODE中存在的可模拟的键盘键位key
+KEY_CONFIG = {
+    32: '4',
+    33: '6',
+    34: '7',
+    35: '8',
+    36: 'd',
+    37: 'f',
+    38: 'j',
+    39: 'k',
+    48: 'spacebar',
+    49: 'spacebar',
+    50: 'spacebar',
+    51: 'spacebar',
+    52: 'spacebar',
+    53: 'spacebar',
+    54: 'spacebar',
+    55: 'spacebar',
+    56: 'spacebar',
+    57: 'spacebar',
+    58: 'spacebar',
+    59: 'spacebar',
+    60: 'spacebar',
+    61: 'spacebar',
+    62: 'spacebar',
+    63: 'spacebar',
+    64: 'spacebar',
+    65: 'spacebar',
+    66: 'spacebar',
+    67: 'spacebar',
+    68: 'spacebar',
+    69: 'spacebar',
+    70: 'spacebar',
+    71: 'spacebar',
+    72: 'enter'
+}
+WHEEL_CONFIG = {
+    -1: ('right_arrow', 'left_arrow'),
+    1: ('up_arrow', 'down_arrow'),
+    6: ('right_arrow', 'left_arrow'),
+    7: ('F4', 'F3'),
+    8: ('volume_up', 'volume_down'),
+}
+
+"""
+以上为MIDI键盘对应的模拟键位设置，以下为程序
+"""
 
 not_use_vk = {
     'F13': 124, 'F14': 125, 'F15': 126, 'F16': 127, 'F17': 128, 'F18': 129, 'F19': 130, 'F20': 131, 'F21': 132,
@@ -101,52 +153,6 @@ BREAK_CODE = {
     'volume_mute': 57379, 'browser_back': 57400, 'browser_favorites': 57368, 'browser_forward': 57392,
     'browser_start_and_home': 57402, 'browser_refresh': 57376, 'browser_search': 57360, 'browser_stop': 57384}
 
-KEY_CONFIG = {
-    32: '4',
-    33: '6',
-    34: '7',
-    35: '8',
-    36: 'd',
-    37: 'f',
-    38: 'j',
-    39: 'k',
-    48: 'spacebar',
-    49: 'spacebar',
-    50: 'spacebar',
-    51: 'spacebar',
-    52: 'spacebar',
-    53: 'spacebar',
-    54: 'spacebar',
-    55: 'spacebar',
-    56: 'spacebar',
-    57: 'spacebar',
-    58: 'spacebar',
-    59: 'spacebar',
-    60: 'spacebar',
-    61: 'spacebar',
-    62: 'spacebar',
-    63: 'spacebar',
-    64: 'spacebar',
-    65: 'spacebar',
-    66: 'spacebar',
-    67: 'spacebar',
-    68: 'spacebar',
-    69: 'spacebar',
-    70: 'spacebar',
-    71: 'spacebar',
-    72: 'enter'
-}
-WHEEL_CONFIG = {
-    -1: ('right_arrow', 'left_arrow'),
-    1: ('up_arrow', 'down_arrow'),
-    6: ('right_arrow', 'left_arrow'),
-    7: ('F4', 'F3'),
-    8: ('volume_up', 'volume_down'),
-}
-
-
-MIDI_KEY_DOWN = 144
-MIDI_KEY_UP = 128
 Cache = {'keypress': {}, 'keyfastpress': {}}
 
 
@@ -353,7 +359,8 @@ def input_main(device_id=None):
                 going = False
 
             if e.type in [pygame.midi.MIDIIN]:
-                # print(e)
+                if DEBUG:
+                    print(e)
                 key_status = e.status
 
                 # 变动摇杆x状态
