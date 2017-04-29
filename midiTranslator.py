@@ -1,6 +1,7 @@
 import win32api
 import win32con
 import time
+import threading
 # import win32gui
 # from pprint import pprint
 
@@ -8,10 +9,6 @@ from ctypes import *
 import pygame
 import pygame.midi
 from pygame.locals import *
-
-Cache = {}
-MIDI_KEY_DOWN = 144
-MIDI_KEY_UP = 128
 
 not_use_vk = {
     'F13': 124, 'F14': 125, 'F15': 126, 'F16': 127, 'F17': 128, 'F18': 129, 'F19': 130, 'F20': 131, 'F21': 132,
@@ -148,6 +145,35 @@ WHEEL_CONFIG = {
 }
 
 
+MIDI_KEY_DOWN = 144
+MIDI_KEY_UP = 128
+Cache = {'keypress': set(), 'keypress_wait': {}}
+
+
+class MyKeyPressThread(threading.Thread):
+    def __init__(self, name):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.bool_stop = False
+        self.check_key_press_interval = 0.02
+        self.check_key_delay = 0.2
+
+    def run(self):
+        while not self.bool_stop:
+            time_now = time.time()
+            try:
+                for key_code in Cache['keypress']:
+                    print(Cache)
+                    if Cache['keypress_wait'][key_code] < (time_now - self.check_key_delay):
+                        key_press(key_code)
+            except RuntimeError:
+                pass
+            time.sleep(self.check_key_press_interval - 0.005)
+
+    def stop(self):
+        self.bool_stop = True
+
+
 class POINT(Structure):
     _fields_ = [("x", c_ulong), ("y", c_ulong)]
 
@@ -190,17 +216,28 @@ def key_input(key):
     win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
 
 
-def key_down(key):
-    key_name = KEY_CONFIG[key]
+def key_down(key_code):
     # win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
-    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0), 1, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 0, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
+    Cache['keypress'].add(key_code)
+    Cache['keypress_wait'][key_code] = time.time()
 
 
-def key_up(key):
-    key_name = KEY_CONFIG[key]
+def key_press(key_code):
+    # win32api.keybd_event(VK_CODE[midi_key], MAKE_CODE.get(midi_key, 0), 1, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
+
+
+def key_up(key_code):
     # win32api.keybd_event(VK_CODE[key_name], BREAK_CODE[midi_key], 3, 0)
     # time.sleep(0.001)
-    win32api.keybd_event(VK_CODE[key_name], win32api.MapVirtualKey(VK_CODE[key_name], 0) + 0b10000000, 3, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0) + 0b10000000, 3, 0)
+    try:
+        Cache['keypress'].remove(key_code)
+        Cache['keypress_wait'].pop(key_code)
+    except KeyError:
+        pass
 
 
 def print_device_info():
@@ -227,11 +264,21 @@ def _print_device_info():
 def wheel_key_input(midi_wheel_cc, wheel_pos):
     wheel_pos_last = Cache.get(midi_wheel_cc, 64)
     key1, key2 = WHEEL_CONFIG[midi_wheel_cc]
+    key1, key2 = VK_CODE[key1], VK_CODE[key2]
     flag = wheel_pos - wheel_pos_last
     if flag > 0 and wheel_pos > 64:
-        key_input(VK_CODE[key1])
+        key_input(key1)
     elif flag < 0 and wheel_pos < 64:
-        key_input(VK_CODE[key2])
+        key_input(key2)
+
+    if wheel_pos == 0:
+        key_down(key2)
+    elif wheel_pos == 127:
+        key_down(key1)
+    else:
+        key_up(key1)
+        key_up(key2)
+
     Cache[midi_wheel_cc] = wheel_pos
 
 
@@ -294,11 +341,11 @@ def input_main(device_id=None):
 
                 # 按下打击垫\键盘
                 elif key_status is 153 or key_status is 144:
-                    key_down(e.data1)
+                    key_down(VK_CODE[KEY_CONFIG[e.data1]])
 
                 # 抬起打击垫\键盘
                 elif key_status is 137 or key_status is 128:
-                    key_up(e.data1)
+                    key_up(VK_CODE[KEY_CONFIG[e.data1]])
 
         if i.poll():
             midi_events = i.read(1)
@@ -315,7 +362,11 @@ def input_main(device_id=None):
 if __name__ == '__main__':
     # if (joy_x | joy_y | k1 | k2 | k3 | k8) is 127 or (joy_x & joy_y & k1 & k2 & k3 & k8) is 0:
     #     for key, st in {joy_x, joy_y, k1, k2, k3, k8}:
+    th = MyKeyPressThread('keypress')
+    th.start()
     input_main()
+    th.stop()
+
     # for _ in range(3):
     #     time.sleep(1)
     #     # key_input_vk('+')
