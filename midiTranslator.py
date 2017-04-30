@@ -243,11 +243,11 @@ def key_input_vk(key_name):
     key_input(key)
 
 
-def key_input(key):
-    win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
-    win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), 1, 0)
+def key_input(key_code):
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 3, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
     time.sleep(0.01)
-    win32api.keybd_event(key, win32api.MapVirtualKey(key, 0) + 0b10000000, 3, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 3, 0)
 
 
 def key_down(key_code):
@@ -265,7 +265,7 @@ def key_press(key_code):
 def key_up(key_code):
     # win32api.keybd_event(VK_CODE[key_name], BREAK_CODE[midi_key], 3, 0)
     # time.sleep(0.001)
-    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0) + 0b10000000, 3, 0)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 3, 0)
     try:
         Cache['keypress'].pop(key_code)
     except KeyError:
