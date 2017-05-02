@@ -95,7 +95,7 @@ VK_CODE = {
     'stop_media': 0xB2, 'play/pause_media': 0xB3, 'start_mail': 0xB4, 'select_media': 0xB5,
     'start_application_1': 0xB6, 'start_application_2': 0xB7, 'attn_key': 0xF6, 'crsel_key': 0xF7,
     'exsel_key': 0xF8, 'play_key': 0xFA, 'zoom_key': 0xFB, 'clear_key': 0xFE, '=': 0xBB, ',': 0xBC, '-': 0xBD,
-    '.': 0xBE, '/': 0xBF, '`': 0xC0, ';': 0xBA, '[': 0xDB, '\\': 0xDC, ']': 0xDD, "'": 0xDE
+    '.': 0xBE, '/': 0xBF, '`': 0xC0, ';': 0xBA, '[': 0xDB, '\\': 0xDC, ']': 0xDD, "'": 0xDE, 'Unknown': 0
 }
 wangshang_yuanshi_make_code_set1 = {
     "esc": 0x01, "1": 0x02, "2": 0x03, "3": 0x04, "4": 0x05, "5": 0x06, "6": 0x07, "7": 0x08, "8": 0x09, "9": 0x0a,
@@ -134,6 +134,7 @@ MAKE_CODE = {
     'start_mail': 57416, 'select_media': 57424, 'play/pause_media': 57396, 'stop_media': 57403,
     'volume_mute': 57379, 'browser_back': 57400, 'browser_favorites': 57368, 'browser_forward': 57392,
     'browser_start_and_home': 57402, 'browser_refresh': 57376, 'browser_search': 57360, 'browser_stop': 57384,
+    'Unknown': 0
 }
 
 BREAK_CODE = {
@@ -154,7 +155,9 @@ BREAK_CODE = {
     'start_application_2(my_computer?)': 57408, 'next_track': 57421, 'previous_track': 57365, 'volume_up': 57394,
     'volume_down': 57377, 'start_mail': 57416, 'select_media': 57424, 'play/pause_media': 57396, 'stop_media': 57403,
     'volume_mute': 57379, 'browser_back': 57400, 'browser_favorites': 57368, 'browser_forward': 57392,
-    'browser_start_and_home': 57402, 'browser_refresh': 57376, 'browser_search': 57360, 'browser_stop': 57384}
+    'browser_start_and_home': 57402, 'browser_refresh': 57376, 'browser_search': 57360, 'browser_stop': 57384,
+    'Unknown': 0
+}
 
 Cache = {'keypress': {}, 'keyfastpress': {}}
 
@@ -408,11 +411,11 @@ def input_main(device_id=None):
 
                 # 按下打击垫\键盘
                 elif key_status is 153 or key_status is 144:
-                    key_down(VK_CODE[KEY_CONFIG[e.data1]])
+                    key_down(VK_CODE[KEY_CONFIG.get(e.data1, 'Unknown')])
 
                 # 抬起打击垫\键盘
                 elif key_status is 137 or key_status is 128:
-                    key_up(VK_CODE[KEY_CONFIG[e.data1]])
+                    key_up(VK_CODE[KEY_CONFIG.get(e.data1, 'Unknown')])
 
         if i.poll():
             midi_events = i.read(1)
