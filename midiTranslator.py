@@ -244,9 +244,11 @@ def key_input_vk(key_name):
 
 
 def key_input(key_code):
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 2, 0)
     win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 3, 0)
     win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 1, 0)
     time.sleep(0.01)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 2, 0)
     win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 3, 0)
 
 
