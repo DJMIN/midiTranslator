@@ -263,8 +263,8 @@ def key_press(key_code):
 
 
 def key_up(key_code):
-    # win32api.keybd_event(VK_CODE[key_name], BREAK_CODE[midi_key], 3, 0)
     # time.sleep(0.001)
+    win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 2, 0)
     win32api.keybd_event(key_code, win32api.MapVirtualKey(key_code, 0), 3, 0)
     try:
         Cache['keypress'].pop(key_code)
