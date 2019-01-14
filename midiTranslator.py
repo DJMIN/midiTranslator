@@ -21,7 +21,7 @@ DEBUG = True
 KEY_CONFIG = None
 WHEEL_CONFIG = None
 if os.path.exists('config.json'):
-    with open('config.json', 'r') as f:
+    with open('config.json', 'r', encoding='utf8') as f:
         config_f = json.loads(''.join([line for line in f.readlines() if not line.strip().startswith('//')]))
     KEY_CONFIG = {int(k): v for k, v in config_f.get('KEY_CONFIG', None).items()}
     WHEEL_CONFIG = {int(k): v for k, v in config_f.get('WHEEL_CONFIG', None).items()}
