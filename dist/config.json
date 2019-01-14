@@ -1,0 +1,68 @@
+{
+  "KEY_CONFIG": {
+    "32": "d",
+    "33": "f",
+    "34": "j",
+    "35": "k",
+    "36": "d",
+    "37": "f",
+    "38": "j",
+    "39": "k",
+    "48": "spacebar",
+    "49": "spacebar",
+    "50": "spacebar",
+    "51": "spacebar",
+    "52": "spacebar",
+    "53": "a",
+    "54": "spacebar",
+    "55": "s",
+    "56": "spacebar",
+    "57": "d",
+    "58": "spacebar",
+    "59": "f",
+    "60": "j",
+    "61": "spacebar",
+    "62": "k",
+    "63": "spacebar",
+    "64": "l",
+    "65": ";",
+    "66": "spacebar",
+    "67": "spacebar",
+    "68": "spacebar",
+    "69": "spacebar",
+    "70": "spacebar",
+    "71": "spacebar",
+    "72": "enter"
+  },
+  "WHEEL_CONFIG": {
+    "-1": [
+      "right_arrow",
+      "left_arrow"
+    ],
+    "1": [
+      "up_arrow",
+      "down_arrow"
+    ],
+    "5": [
+      "up_arrow",
+      "down_arrow"
+    ],
+    "6": [
+      "right_arrow",
+      "left_arrow"
+    ],
+    "7": [
+      "F4",
+      "F3"
+    ],
+    "8": [
+      "volume_up",
+      "volume_down"
+    ],
+    "9": [
+      "spacebar",
+      "enter"
+    ]
+  },
+  "DEBUG": true
+}

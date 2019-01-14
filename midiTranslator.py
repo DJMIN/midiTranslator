@@ -1,4 +1,4 @@
-
+# UTF-8
 import win32api
 import win32con
 import time
@@ -8,6 +8,8 @@ import threading
 
 from ctypes import *
 import pygame
+import os
+import json
 import pygame.midi
 from pygame.locals import *
 
@@ -16,7 +18,16 @@ from pygame.locals import *
 DEBUG = True
 
 # key为MIDI键盘key码（MIDI键盘输入信息中的"data2"）， value为在VK_CODE中存在的可模拟的键盘键位key
-KEY_CONFIG = {
+KEY_CONFIG = None
+WHEEL_CONFIG = None
+if os.path.exists('config.json'):
+    with open('config.json', 'r') as f:
+        config_f = json.loads(''.join([line for line in f.readlines() if not line.strip().startswith('//')]))
+    KEY_CONFIG = {int(k): v for k, v in config_f.get('KEY_CONFIG', None).items()}
+    WHEEL_CONFIG = {int(k): v for k, v in config_f.get('WHEEL_CONFIG', None).items()}
+    DEBUG = config_f.get('DEBUG', True)
+
+KEY_CONFIG = KEY_CONFIG or {
     32: 'd',
     33: 'f',
     34: 'j',
@@ -51,7 +62,7 @@ KEY_CONFIG = {
     71: 'spacebar',
     72: 'enter'
 }
-WHEEL_CONFIG = {
+WHEEL_CONFIG = WHEEL_CONFIG or {
     -1: ('right_arrow', 'left_arrow'),
     1: ('up_arrow', 'down_arrow'),
     5: ('up_arrow', 'down_arrow'),
@@ -301,7 +312,10 @@ def print_device_info():
 
 
 def _print_device_info():
-    print('共找到%d个MIDI设备，默认MIDI输入设备ID为：%d' % (pygame.midi.get_count(), pygame.midi.get_default_input_id()))
+    res = []
+    s = 'All [%d] MIDI devices. Default MIDI input ID is:    [%d]' % (pygame.midi.get_count(), pygame.midi.get_default_input_id())
+    res.append(s)
+    print(s)
     for i in range(pygame.midi.get_count()):
         r = pygame.midi.get_device_info(i)
         (interf, name, _input, _output, opened) = r
@@ -312,8 +326,10 @@ def _print_device_info():
         if _output:
             in_out = "(output)"
 
-        print("%2i: interface :%s:, name :%s:, opened :%s:  %s" %
-              (i, interf, name, opened, in_out))
+        s = "%2i: interface :%s:, name :%s:, opened :%s:  %s" % (i, interf, name, opened, in_out)
+        res.append(s)
+        print(s)
+    return res
 
 
 def wheel_key_input(midi_wheel_cc, wheel_pos):
@@ -340,13 +356,35 @@ def wheel_key_input(midi_wheel_cc, wheel_pos):
 
 def input_main(device_id=None):
     pygame.init()
+    SCREEN_SIZE = (640, 480)
+    screen = pygame.display.set_mode(SCREEN_SIZE, RESIZABLE, 32)
+    pygame.display.set_caption("midiTranslator v0.1")
+
+    if os.path.exists("./Kelson Sans Regular.otf"):
+        font = pygame.font.Font("./Kelson Sans Regular.otf", 16)
+    else:
+        font = pygame.font.SysFont("MicrosoftYaHei", 16)
+    font_height = font.get_linesize()
+    event_text = []
+
+    # 保证event_text里面只保留一个屏幕的文字
+    # event_text = event_text[-SCREEN_SIZE[1] // font_height:]
+
     pygame.fastevent.init()
     event_get = pygame.fastevent.get
     event_post = pygame.fastevent.post
 
     pygame.midi.init()
 
-    _print_device_info()
+    event_text.extend(_print_device_info())
+    screen.fill((41, 124, 248))
+
+    # 寻找一个合适的起笔位置，最下面开始，留一行的空
+    y = SCREEN_SIZE[1] - font_height
+    for text in reversed(event_text):
+        screen.blit(font.render(text, True, (139, 196, 94)), (0, y))
+        y -= font_height
+    pygame.display.update()
 
     if device_id is None:
         input_id = pygame.midi.get_default_input_id()
@@ -356,7 +394,8 @@ def input_main(device_id=None):
     print("using input_id :%s:" % input_id)
     i = pygame.midi.Input(input_id)
 
-    pygame.display.set_mode((1, 1))
+    if not DEBUG:
+        pygame.display.set_mode((1, 1))
 
     going = True
     while going:
@@ -367,9 +406,27 @@ def input_main(device_id=None):
                           ]:
                 going = False
 
+            if e.type == VIDEORESIZE:
+                SCREEN_SIZE = e.size
+                screen = pygame.display.set_mode(SCREEN_SIZE, RESIZABLE, 32)
+                # pygame.display.set_caption("Window resized to " + str(e.size))
+
             if e.type in [pygame.midi.MIDIIN]:
                 if DEBUG:
-                    print(e)
+                    # print(e)
+                    event_text.append('status[{:03d}]  KeyID[{:03d}]     power[{:03d}]'.format(e.status, e.data1, e.data2))
+                    if len(event_text) > 20:
+                        event_text.pop(0)
+                    screen.fill((41, 124, 248))
+
+                    # 寻找一个合适的起笔位置，最下面开始，留一行的空
+                    y = SCREEN_SIZE[1] - font_height
+                    for text in reversed(event_text):
+                        screen.blit(font.render(text, True, (139, 196, 94)), (0, y))
+                        y -= font_height
+                    pygame.display.update()
+
+                    # print('动作[{}] KeyID[{}] 力度[{}]'.format(e.status, e.data1, e.data2))
                 key_status = e.status
 
                 # 变动摇杆x状态
