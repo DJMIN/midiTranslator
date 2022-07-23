@@ -362,10 +362,10 @@ def input_main(device_id=None):
     screen = pygame.display.set_mode(SCREEN_SIZE, RESIZABLE, 32)
     pygame.display.set_caption("midiTranslator v0.1", 'midiTranslator')
 
-    # if os.path.exists("./front.otf"):
-    #     font = pygame.font.Font("./front.otf", 16)
-    # else:
-    font = pygame.font.SysFont("", 16)
+    if os.path.exists("./front.otf"):
+        font = pygame.font.Font("./front.otf", 16)
+    else:
+        font = pygame.font.SysFont("Adobe Arabic", 16)
     font_height = font.get_linesize()
     event_text = []
 

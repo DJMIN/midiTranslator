@@ -67,5 +67,5 @@
     ]
   },
    // 是否打印调试日志 true / false ,关系到按键灵敏度
-  "DEBUG": false
+  "DEBUG": true
 }
