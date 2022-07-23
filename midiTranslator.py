@@ -14,9 +14,10 @@ import pygame.midi
 from pygame.locals import *
 
 # 设置为True可以获取到MIDI键盘输入信息
-# DEBUG = False
-DEBUG = True
+DEBUG = False
+# DEBUG = True
 
+DEVICE_ID = None
 # key为MIDI键盘key码（MIDI键盘输入信息中的"data2"）， value为在VK_CODE中存在的可模拟的键盘键位key
 KEY_CONFIG = None
 WHEEL_CONFIG = None
@@ -26,6 +27,7 @@ if os.path.exists('config.json'):
     KEY_CONFIG = {int(k): v for k, v in config_f.get('KEY_CONFIG', None).items()}
     WHEEL_CONFIG = {int(k): v for k, v in config_f.get('WHEEL_CONFIG', None).items()}
     DEBUG = config_f.get('DEBUG', True)
+    DEVICE_ID = config_f.get('DEVICE_ID', None)
 
 KEY_CONFIG = KEY_CONFIG or {
     32: 'd',
@@ -358,12 +360,12 @@ def input_main(device_id=None):
     pygame.init()
     SCREEN_SIZE = (640, 480)
     screen = pygame.display.set_mode(SCREEN_SIZE, RESIZABLE, 32)
-    pygame.display.set_caption("midiTranslator v0.1")
+    pygame.display.set_caption("midiTranslator v0.1", 'midiTranslator')
 
-    if os.path.exists("./Kelson Sans Regular.otf"):
-        font = pygame.font.Font("./Kelson Sans Regular.otf", 16)
-    else:
-        font = pygame.font.SysFont("MicrosoftYaHei", 16)
+    # if os.path.exists("./front.otf"):
+    #     font = pygame.font.Font("./front.otf", 16)
+    # else:
+    font = pygame.font.SysFont("", 16)
     font_height = font.get_linesize()
     event_text = []
 
@@ -386,10 +388,10 @@ def input_main(device_id=None):
         y -= font_height
     pygame.display.update()
 
-    if device_id is None:
+    if device_id is None and not DEVICE_ID:
         input_id = pygame.midi.get_default_input_id()
     else:
-        input_id = device_id
+        input_id = device_id or DEVICE_ID
 
     print("using input_id :%s:" % input_id)
     i = pygame.midi.Input(input_id)
@@ -407,8 +409,7 @@ def input_main(device_id=None):
                 going = False
 
             if e.type == VIDEORESIZE:
-                SCREEN_SIZE = e.size
-                screen = pygame.display.set_mode(SCREEN_SIZE, RESIZABLE, 32)
+                screen = pygame.display.set_mode(e.size, RESIZABLE, 32)
                 # pygame.display.set_caption("Window resized to " + str(e.size))
 
             if e.type in [pygame.midi.MIDIIN]:
@@ -471,7 +472,7 @@ def input_main(device_id=None):
                     key_down(VK_CODE[KEY_CONFIG.get(e.data1, 'Unknown')])
 
                 # 抬起打击垫\键盘
-                elif key_status is 137 or key_status is 128:
+                elif key_status is 137 or key_status is 128 or (key_status is 144 and e.data2 is 1):
                     key_up(VK_CODE[KEY_CONFIG.get(e.data1, 'Unknown')])
 
         if i.poll():

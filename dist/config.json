@@ -5,22 +5,22 @@
     "33": "f",
     "34": "j",
     "35": "k",
-    "36": "d",
+    "36": "left_shift",
     "37": "f",
     "38": "j",
-    "39": "k",
+    "39": "right_shift",
     "48": "spacebar",
     "49": "spacebar",
     "50": "spacebar",
     "51": "spacebar",
-    "52": "spacebar",
-    "53": "a",
+    "52": "a",
+    "53": "s",
     "54": "spacebar",
-    "55": "s",
+    "55": "d",
     "56": "spacebar",
-    "57": "d",
+    "57": "f",
     "58": "spacebar",
-    "59": "f",
+    "59": "spacebar",
     "60": "j",
     "61": "spacebar",
     "62": "k",
@@ -66,6 +66,6 @@
       "enter"
     ]
   },
-   // 是否打印调试日志 true / false
-  "DEBUG": true
+   // 是否打印调试日志 true / false ,关系到按键灵敏度
+  "DEBUG": false
 }

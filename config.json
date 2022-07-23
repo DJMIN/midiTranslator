@@ -67,5 +67,6 @@
     ]
   },
    // 是否打印调试日志 true / false
-  "DEBUG": true
+  "DEBUG": true,
+  "DEVICE_ID": 1
 }
